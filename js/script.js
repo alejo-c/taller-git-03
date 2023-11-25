@@ -1,106 +1,81 @@
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", () => {
+    var buttons = []
 
-    var tela = document.getElementById("tela");
+    let screen = document.getElementById("tela")
+    let calculateButton = document.getElementById("calculate")
+    let clearButton = document.getElementById("clearScreen")
+    let deleteLastButton = document.getElementById("deleteLast")
+    let convertDegreesButton = document.getElementById('degrees')
 
-    //Array de elementos que receber uma listener
-    var listenerBtn = [];
+    for (let i = 0; i < 10; i++)
+        buttons.push(document.getElementById(`num${i}`))
 
-    //teclas adicionais do teclado
-    var btnResultado = document.getElementById("resultado");
-    var btnLimparTela = document.getElementById("limparTela");
-    var btnApagarAnterior = document.getElementById("apagarAnterior");
+    buttons.push(document.getElementById("add"))
+    buttons.push(document.getElementById("substraction"))
+    buttons.push(document.getElementById("division"))
+    buttons.push(document.getElementById("multiplication"))
+    buttons.push(document.getElementById("dot"))
 
-    listenerBtn.push(document.getElementById("ponto"));
+    const isOperator = operator => '+-*/'.includes(operator)
 
-    //teclas dos operadores
-    listenerBtn.push(document.getElementById("soma"));
-    listenerBtn.push(document.getElementById("subtracao"));
-    listenerBtn.push(document.getElementById("divisao"));
-    listenerBtn.push(document.getElementById("multiplicacao"));
-
-    //teclas númericas da calculadora
-    listenerBtn.push(document.getElementById("num0"));
-    listenerBtn.push(document.getElementById("num1"));
-    listenerBtn.push(document.getElementById("num2"));
-    listenerBtn.push(document.getElementById("num3"));
-    listenerBtn.push(document.getElementById("num4"));
-    listenerBtn.push(document.getElementById("num5"));
-    listenerBtn.push(document.getElementById("num6"));
-    listenerBtn.push(document.getElementById("num7"));
-    listenerBtn.push(document.getElementById("num8"));
-    listenerBtn.push(document.getElementById("num9"));
-
-    //Adicionando evento de click
-    for (var i = 0; i < listenerBtn.length; i++) {
-        listenerBtn[i].addEventListener("click", passarValorTela);
+    const deleteLast = () => {
+        if (screen.value.length > 0)
+            screen.value = screen.value.substring(0, screen.value.length - 1)
     }
 
-    btnResultado.onclick = function () {
-        verificarResulatado();
+    const atClickButton = event => {
+        let value = event.currentTarget.value
+        if (isOperator(value)) {
+            var aux = screen.value.substring(screen.value.length - 1, screen.value.length)
+
+            if (isOperator(aux))
+                deleteLast()
+        }
+        if (value)
+            screen.value += value
     }
 
-    function verificarResulatado() {
+    const calculate = () => {
         try {
-            var aux = tela.value.substring(tela.value.length - 1, tela.value.length);
-            if (verificarOperador(aux)) {
-                apagarAnterior();
-            }
+            var aux = screen.value.substring(screen.value.length - 1, screen.value.length)
+            if (isOperator(aux))
+                deleteLast()
 
-            var valorCalculado = eval(tela.value); //calcular o conteúdo da string
-            if (valorCalculado || valorCalculado == "0") {
-                tela.value = valorCalculado;
-            } else {
-                throw "erro";
-            }
+            var valorCalculado = eval(screen.value) //calcular o conteúdo da string
+            if (valorCalculado || valorCalculado == "0")
+                screen.value = valorCalculado
+            else
+                throw "error"
         } catch (e) {
-            console.error(e);
+            console.error(e)
         }
     }
 
-    function passarValorTela() {
+    const clear = () => screen.value = ''
 
-        if (verificarOperador(this.value)) {
-            var aux = tela.value.substring(tela.value.length - 1, tela.value.length);
-            //subtituir o valor do operador pelo atual
-            if (verificarOperador(aux)) {
-                apagarAnterior();
-            }
-        }
-        if (this.value) {
-            tela.value += this.value;
-        }
+    const atKeyPressed = event => {
+        let key = event.key
 
+        if (key.includes('Arrow') || key == 'Backspace' || key == 'Delete')
+            return
+        if (key == 'Enter')
+            return calculate()
+        if (key == 'Escape')
+            return clear()
+        if (!/^\d|\+|-|\*|\/|\.$/.test(key))
+            return event.preventDefault()
     }
 
-    btnApagarAnterior.onclick = function () {
-        apagarAnterior();
+    const convertDegrees = () => {
+        screen.value += '* 9/5 + 32'
+        calculate()
     }
 
-    function apagarAnterior() {
-        if (tela.value.length > 0) {
-            var aux = tela.value.substring(0, tela.value.length - 1);
-            tela.value = aux;
-        }
-    }
+    buttons.forEach(button => button.addEventListener("click", atClickButton))
+    screen.addEventListener('keydown', atKeyPressed)
+    convertDegreesButton.addEventListener('click', convertDegrees)
 
-    btnLimparTela.onclick = function () {
-        tela.value = "";
-    }
-
-    function verificarOperador(valor) {
-        switch (valor) {
-            case "+":
-                return true;
-            case "-":
-                return true;
-            case "*":
-                return true;
-            case "/":
-                return true;
-
-            default:
-                return false;
-        }
-    }
-
-});
+    calculateButton.onclick = calculate
+    deleteLastButton.onclick = deleteLast
+    clearButton.onclick = clear
+})
